@@ -1,12 +1,12 @@
 import telebot
 import json
+import os
 
 from telebot import types
+from datetime import datetime
 from tinydb import TinyDB, Query
 
 from constants import *
-from datetime import datetime
-import os
 from messages import *
 
 MODES = ['INIT', 'LOCATION', 'CATEGORY', 'RECORD']
@@ -30,40 +30,35 @@ def start(message):
 	else:
 		db.insert(data)
 
-	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id))
+	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id), reply_markup=types.ReplyKeyboardRemove())
 
 
 @bot.message_handler(commands = ['help'])
 def help_user(message):
-	bot.send_message(message.chat.id,Commands)
-
-
+	bot.send_message(message.chat.id, Commands, reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands=['locate'])
 def locate(message):
 	user_id = message.from_user.id
-
 	mode = MODES[1]
-	data = {'current_mode': mode}
 
+	data = {'current_mode': mode}
 	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(LOCATIONS), 3)
-
-	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup = markup)
+	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
 @bot.message_handler(commands=['category'])
 def category(message):
 	user_id = message.from_user.id
-
 	mode = MODES[2]
+
 	data = {'current_mode': mode}
 
 	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(CATEGORIES), 3)
-
-	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup = markup)
+	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup=markup)
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
@@ -73,36 +68,40 @@ def echo(message):
 	location = None
 	category = None
 
-	print(current_mode)
+	# print(current_mode)
 
 	if current_mode == MODES[0]:
-		bot.send_message(message.chat.id, message.text.upper())
+		bot.send_message(message.chat.id, 'Choose location and category please', reply_markup=types.ReplyKeyboardRemove())
 
 	elif current_mode == MODES[1]:
-		# _update(VARS, 'location', message.text)
-
-		data = {'location': message.text}
+		data = { 'location': message.text }
 
 		db.update(data, q.user_id == user_id)
+
+		bot.send_message(message.chat.id, 'Location saved', reply_markup=types.ReplyKeyboardRemove())
 
 	elif current_mode == MODES[2]:
-		data = {'category': message.text}
+		data = { 'category': message.text }
 
 		db.update(data, q.user_id == user_id)
+
+		bot.send_message(message.chat.id, 'Category saved', reply_markup=types.ReplyKeyboardRemove())
 
 	elif current_mode == MODES[3]:
 		save(message)		# here save message
 
+		bot.send_message(message.chat.id, 'Saved', reply_markup=types.ReplyKeyboardRemove())
+
 	if category != 'null' and location != 'null':
 		mode = MODES[3]
+		data = { 'current_mode': mode }
 
-		data = {'current_mode': mode}
 		db.update(data, q.user_id == user_id)
 
 	else:
 		mode = MODES[0]
+		data = { 'current_mode': mode }
 
-		data = {'current_mode': mode}
 		db.update(data, q.user_id == user_id)
 
 def save(message):
@@ -168,35 +167,6 @@ def _get_items(file):
 				arr.append(line)
 
 			return arr
-	except:
-		print(file + ' not found!')
-
-def _update(file, field, value):
-	data = _get_json(file)
-
-	try:
-		data[field] = value
-
-	except:
-		print('field not found!')
-
-	_set_json(file, data)
-
-def _set_json(file, data):
-	try:
-		with open(file, "w") as f:
-			json.dump(data, f)
-
-	except:
-		print(file + ' not found!')
-
-def _get_json(file):
-	try:
-		with open(file, "r") as f:
-			data = json.load(f)
-
-			return data
-
 	except:
 		print(file + ' not found!')
 
