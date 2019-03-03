@@ -6,19 +6,20 @@ from constants import *
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
 
-# /start
+# COMMANDS ================================================================
 @bot.message_handler(commands=['start'])
 def start(message):
 	markup = _get_RKMarkup(_get_items(LOCATIONS), 3)
 
 	bot.send_message(message.chat.id, "Hello", reply_markup = markup)
 
+@bot.message_handler(func=lambda message: True)
+def echo(message):
+	bot.send_message(message.chat.id, message.text.upper())
+
 # MAIN =====================================================================
 def main():									# method for bot polling
 	print('Started!')
-
-	# for i in _get_items(LOCATIONS):
-	# 	print(i, end='')
 
 	bot.polling()
 
@@ -52,12 +53,14 @@ def _get_RKMarkup(arr, limit):
 	return markup
 
 def _get_items(file):
+
 	try:
 		with open(file, "r") as file:
 			arr = []
 
 			for line in file:
 				arr.append(line)
+
 
 			return arr
 	except:
