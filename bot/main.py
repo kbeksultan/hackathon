@@ -67,14 +67,22 @@ def echo(message):
 
 
 def save(message):
+	location = _get_json(VARS)['location']
+	category = _get_json(VARS)['category']
 	text  = message.text
 	name  = message.from_user.first_name
 	date = datetime.now()
-	diro = "../Notes/" + name
+	diro = "../Notes/" + location
 	if not os.path.exists(diro):
 		os.mkdir(diro)
-	road  = "../Notes/" + name + "/" + date.strftime('%d_%m_%Y_%H_%M_%S') + ".txt"
-	f = open(road , "a")
+	diro += "/" + category
+	if not os.path.exists(diro):
+		os.mkdir(diro)
+	diro += "/" + name
+	if not os.path.exists(diro):
+		os.mkdir(diro)
+	diro += "/" + date.strftime('%d_%m_%Y_%H_%M_%S') + ".txt"
+	f = open(diro , "a")
 	date = date.strftime('%d/%m/%Y %H:%M:%S')
 	f.write(name + " " + date + " " + text)
 
