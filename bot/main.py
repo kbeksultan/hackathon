@@ -120,10 +120,7 @@ def save(message):
 	diro += "/" + category
 	if not os.path.exists(diro):
 		os.mkdir(diro)
-	diro += "/" + name
-	if not os.path.exists(diro):
-		os.mkdir(diro)
-	diro += "/" + date.strftime('%d_%m_%Y_%H_%M_%S') + ".txt"
+	diro += "/" + name + ".txt"
 	f = open(diro , "a")
 	date = date.strftime('%d/%m/%Y %H:%M:%S')
 	f.write(name + " " + date + " " + text)
