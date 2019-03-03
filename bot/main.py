@@ -20,7 +20,7 @@ q = Query()
 @bot.message_handler(commands=['start'])
 def start(message):
 	user_id = message.from_user.id
-	
+	user_name = message.from_user.first_name	
 	data = START
 	data['user_id'] = user_id
 
@@ -30,14 +30,13 @@ def start(message):
 	else:
 		db.insert(data)
 
-	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id), reply_markup=types.ReplyKeyboardRemove())
-
+	bot.send_message(message.chat.id, 'Hello, ' + str(user_name) + '\nThis bot here to accept your report\n\n' + 'Choose location and category please\n' + Commands , reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands = ['help'])
 def help_user(message):
 	bot.send_message(message.chat.id, Commands, reply_markup=types.ReplyKeyboardRemove())
 
-@bot.message_handler(commands=['locate'])
+@bot.message_handler(commands=['location'])
 def locate(message):
 	user_id = message.from_user.id
 	mode = MODES[1]
@@ -59,6 +58,7 @@ def category(message):
 
 	markup = _get_RKMarkup(_get_items(CATEGORIES), 3)
 	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup=markup)
+	
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
@@ -122,7 +122,7 @@ def save(message):
 	diro += "/" + name + ".txt"
 	f = open(diro , "a")
 	date = date.strftime('%d/%m/%Y %H:%M:%S')
-	f.write(name + " " + date + " " + text)
+	f.write( date + " " + text + "\n")
 
 # MAIN =====================================================================
 def main():									# method for bot polling
