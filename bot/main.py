@@ -13,7 +13,7 @@ MODES = ['INIT', 'LOCATION', 'CATEGORY', 'SERVICE', 'RECORD']
 START = {"user_id": "0", "location": "null", "category": "null", "service": "null", "current_mode": "INIT"}
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
-var = TinyDB(VARS)
+db = TinyDB(VARS)
 loc = TinyDB(LOCATIONS)
 cat = TinyDB(CATEGORIES)
 ser = TinyDB(SERVICES)
@@ -23,11 +23,7 @@ q = Query()
 @bot.message_handler(commands=['start'])
 def start(message):
 	user_id = message.from_user.id
-
-<<<<<<< HEAD
-=======
 	user_name = message.from_user.first_name	
->>>>>>> f6bb1c7c49b6646cedd3461d7cbb5bff79e1346b
 	data = START
 	data['user_id'] = user_id
 
@@ -36,14 +32,10 @@ def start(message):
 
 	else:
 		db.insert(data)
-<<<<<<< HEAD
-	bot.send_message(message.chat.id, 'Hi, my name is TestBot.Your user id is ' + str(user_id), reply_markup=types.ReplyKeyboardRemove())
 	
 	# bot.register_next_step_handler(message,locate(message))	
-=======
 
 	bot.send_message(message.chat.id, 'Hello, ' + str(user_name) + '\nThis bot here to accept your report\n\n' + 'Choose location and category please\n' + Commands , reply_markup=types.ReplyKeyboardRemove())
->>>>>>> f6bb1c7c49b6646cedd3461d7cbb5bff79e1346b
 
 @bot.message_handler(commands = ['help'])
 def help_user(message):
@@ -62,11 +54,9 @@ def locate(message):
 
 	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
-<<<<<<< HEAD
 	# bot.register_next_step_handler(msg,category(msg))	
 
 
-=======
 @bot.message_handler(commands=['service'])
 def service(message):
 	user_id = message.from_user.id
@@ -79,7 +69,6 @@ def service(message):
 	markup = _get_RKMarkup( [x['title'] for x in ser.all()], 3)
 
 	bot.send_message(message.chat.id, "Choose Service", reply_markup=markup)
->>>>>>> f6bb1c7c49b6646cedd3461d7cbb5bff79e1346b
 
 @bot.message_handler(commands=['category'])
 def category(message):
@@ -155,7 +144,8 @@ def save(message):
 	location = db.search(q.user_id == user_id)[0]['location']
 	category = db.search(q.user_id == user_id)[0]['category']
 	service = db.search(q.user_id == user_id)[0]['service']
-	
+	if category == None:
+		category = service
 	text  = message.text
 	name  = message.from_user.first_name
 	date = datetime.now()
