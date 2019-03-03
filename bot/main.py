@@ -3,15 +3,27 @@ import telebot
 from telebot import types
 
 from constants import *
+from messages import *
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
 
 # COMMANDS ================================================================
 @bot.message_handler(commands=['start'])
 def start(message):
+	bot.send_message(message.chat.id, "Hello")
+
+@bot.message_handler(commands=['locate'])
+def locate(message):
 	markup = _get_RKMarkup(_get_items(LOCATIONS), 3)
 
-	bot.send_message(message.chat.id, "Hello", reply_markup = markup)
+	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup = markup)
+
+@bot.message_handler(commands=['category'])
+def locate(message):
+	markup = _get_RKMarkup(_get_items(CATEGORIES), 3)
+
+	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup = markup)
+
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
@@ -37,7 +49,7 @@ def _get_RKMarkup(arr, limit):
 
 		for j in range(limit):
 
-			if i + j < size:
+			if i+j < size:
 				row.append(arr[i+j])
 
 				# print(arr[i+j] + '')
@@ -45,7 +57,6 @@ def _get_RKMarkup(arr, limit):
 			else:
 				break
 
-		
 		markup.row(*row)
 
 	# print(markup)
@@ -60,7 +71,6 @@ def _get_items(file):
 
 			for line in file:
 				arr.append(line)
-
 
 			return arr
 	except:
