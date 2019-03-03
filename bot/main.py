@@ -56,7 +56,22 @@ def _locate(message):
 
 	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
-def service(message):
+def _choose(message):
+	markup = types.ReplyKeyboardMarkup(row_width = 2)
+	first = types.KeyboardButton('Service')
+	second = types.KeyboardButton('Category')
+	markup.row(first,second)
+
+	user_id = message.from_user.id
+	# mode = MODES[2]
+
+	data = {'current_mode': 'choose'}
+
+	db.update(data, q.user_id == user_id)
+
+	bot.send_message(message.chat.id, "Choose one option", reply_markup=markup)
+
+def _service(message):
 	user_id = message.from_user.id
 	mode = MODES[3]
 
@@ -69,7 +84,7 @@ def service(message):
 	bot.send_message(message.chat.id, "Choose Service", reply_markup=markup)
 
 def _category(message):
-	print('asd')
+	# print('asd')
 	user_id = message.from_user.id
 	mode = MODES[2]
 
@@ -107,7 +122,7 @@ def echo(message):
 
 		msg = bot.send_message(message.chat.id, 'Location saved', reply_markup=types.ReplyKeyboardRemove())
 
-		mode = 'category'
+		mode = 'choose'
 
 	elif current_mode == MODES[2]:
 		data = { 'category': message.text }
@@ -116,7 +131,6 @@ def echo(message):
 
 		bot.send_message(message.chat.id, 'Category saved', reply_markup=types.ReplyKeyboardRemove())
 
-		mode = 'service'
 
 	elif current_mode == MODES[3]:
 		data = { 'service': message.text }
@@ -131,7 +145,17 @@ def echo(message):
 
 		bot.send_message(message.chat.id, 'Saved', reply_markup=types.ReplyKeyboardRemove())
 
-	if mode == 'service':
+	elif current_mode == 'choose':
+		if message.text == 'Service':
+			mode = 'service'
+
+		elif message.text == 'Category':
+			mode = 'category'
+			
+	if mode == 'choose':
+		_choose(message)
+
+	elif mode == 'service':
 		_service(message)
 
 	elif mode == 'category':
