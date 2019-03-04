@@ -155,7 +155,8 @@ def save(message):
 	location = db.search(q.user_id == user_id)[0]['location']
 	category = db.search(q.user_id == user_id)[0]['category']
 	service = db.search(q.user_id == user_id)[0]['service']
-	
+	if category == None:
+		category = service
 	text  = message.text
 	name  = message.from_user.first_name
 	date = datetime.now()
