@@ -1,12 +1,12 @@
 import telebot
 import json
+import os
 
 from telebot import types
+from datetime import datetime
 from tinydb import TinyDB, Query
 
 from constants import *
-from datetime import datetime
-import os
 from messages import *
 
 MODES = ['INIT', 'LOCATION', 'CATEGORY', 'RECORD']
@@ -35,28 +35,25 @@ def start(message):
 @bot.message_handler(commands=['locate'])
 def locate(message):
 	user_id = message.from_user.id
-
 	mode = MODES[1]
-	data = {'current_mode': mode}
 
+	data = {'current_mode': mode}
 	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(LOCATIONS), 3)
-
-	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup = markup)
+	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
 @bot.message_handler(commands=['category'])
 def category(message):
 	user_id = message.from_user.id
-
 	mode = MODES[2]
+
 	data = {'current_mode': mode}
 
 	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(CATEGORIES), 3)
-
-	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup = markup)
+	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup=markup)
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
@@ -66,36 +63,36 @@ def echo(message):
 	location = None
 	category = None
 
-	print(current_mode)
+	# print(current_mode)
 
 	if current_mode == MODES[0]:
-		bot.send_message(message.chat.id, message.text.upper())
+		bot.send_message(message.chat.id, 'Choose location and category please')
 
 	elif current_mode == MODES[1]:
-		# _update(VARS, 'location', message.text)
-
-		data = {'location': message.text}
+		data = { 'location': message.text }
 
 		db.update(data, q.user_id == user_id)
 
 	elif current_mode == MODES[2]:
-		data = {'category': message.text}
+		data = { 'category': message.text }
 
 		db.update(data, q.user_id == user_id)
 
 	elif current_mode == MODES[3]:
 		save(message)		# here save message
 
+		bot.send_message(message.chat.id, 'Saved')
+
 	if category != 'null' and location != 'null':
 		mode = MODES[3]
+		data = { 'current_mode': mode }
 
-		data = {'current_mode': mode}
 		db.update(data, q.user_id == user_id)
 
 	else:
 		mode = MODES[0]
+		data = { 'current_mode': mode }
 
-		data = {'current_mode': mode}
 		db.update(data, q.user_id == user_id)
 
 def save(message):
