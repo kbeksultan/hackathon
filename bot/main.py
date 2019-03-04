@@ -13,7 +13,7 @@ MODES = ['INIT', 'LOCATION', 'CATEGORY', 'SERVICE', 'RECORD']
 START = {"user_id": "0", "location": "null", "category": "null", "service": "null", "current_mode": "INIT"}
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
-var = TinyDB(VARS)
+db = TinyDB(VARS)
 loc = TinyDB(LOCATIONS)
 cat = TinyDB(CATEGORIES)
 ser = TinyDB(SERVICES)
@@ -40,8 +40,11 @@ def start(message):
 def help_user(message):
 	bot.send_message(message.chat.id, Commands, reply_markup=types.ReplyKeyboardRemove())
 
-@bot.message_handler(commands=['location'])
-def locate(message):
+@bot.message_handler(commands=['go'])
+def go(message):
+	_locate(message)
+
+def _locate(message):
 	user_id = message.from_user.id
 	mode = MODES[1]
 
@@ -53,8 +56,7 @@ def locate(message):
 
 	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
-@bot.message_handler(commands=['service'])
-def service(message):
+def _service(message):
 	user_id = message.from_user.id
 	mode = MODES[3]
 
@@ -66,8 +68,10 @@ def service(message):
 
 	bot.send_message(message.chat.id, "Choose Service", reply_markup=markup)
 
-@bot.message_handler(commands=['category'])
-def category(message):
+# @bot.message_handler(commands=['category'])
+
+def _category(message):
+	print('asd')
 	user_id = message.from_user.id
 	mode = MODES[2]
 
@@ -83,12 +87,17 @@ def category(message):
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
+	print(type(message))
+
 	user_id = message.from_user.id
 
 	current_mode = db.search(q.user_id == user_id)[0]['current_mode']
 	location = None
 	category = None
 	service = None
+
+	mode = None
+	msg = None
 
 	# print(current_mode)
 
@@ -100,7 +109,9 @@ def echo(message):
 
 		db.update(data, q.user_id == user_id)
 
-		bot.send_message(message.chat.id, 'Location saved', reply_markup=types.ReplyKeyboardRemove())
+		msg = bot.send_message(message.chat.id, 'Location saved', reply_markup=types.ReplyKeyboardRemove())
+
+		mode = 'category'
 
 	elif current_mode == MODES[2]:
 		data = { 'category': message.text }
@@ -109,6 +120,8 @@ def echo(message):
 
 		bot.send_message(message.chat.id, 'Category saved', reply_markup=types.ReplyKeyboardRemove())
 
+		mode = 'service'
+
 	elif current_mode == MODES[3]:
 		data = { 'service': message.text }
 
@@ -116,12 +129,19 @@ def echo(message):
 
 		bot.send_message(message.chat.id, 'Service saved', reply_markup=types.ReplyKeyboardRemove())
 
+
 	elif current_mode == MODES[4]:
 		save(message)		# here save message
 
 		bot.send_message(message.chat.id, 'Saved', reply_markup=types.ReplyKeyboardRemove())
 
-	if category != 'null' and location != 'null' and service != 'null':
+	if mode == 'service':
+		_service(message)
+
+	elif mode == 'category':
+		_category(message)
+	
+	elif category != 'null' and location != 'null' and service != 'null':
 		mode = MODES[4]
 		data = { 'current_mode': mode }
 
