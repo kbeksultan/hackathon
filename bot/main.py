@@ -13,7 +13,7 @@ MODES = ['INIT', 'LOCATION', 'CATEGORY', 'RECORD']
 START = {"user_id": "0", "location": "null", "category": "null", "current_mode": "INIT"}
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
-db = TinyDB('vars.json')
+db = TinyDB(VARS)
 q = Query()
 
 # COMMANDS ================================================================
