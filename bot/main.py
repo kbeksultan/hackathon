@@ -56,9 +56,6 @@ def _locate(message):
 
 	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
-	# bot.register_next_step_handler(msg,category(msg))	
-
-@bot.message_handler(commands=['service'])
 def service(message):
 	user_id = message.from_user.id
 	mode = MODES[3]
@@ -70,8 +67,6 @@ def service(message):
 	markup = _get_RKMarkup( [x['title'] for x in ser.all()], 3)
 
 	bot.send_message(message.chat.id, "Choose Service", reply_markup=markup)
-
-# @bot.message_handler(commands=['category'])
 
 def _category(message):
 	print('asd')
@@ -86,13 +81,10 @@ def _category(message):
 	markup = _get_RKMarkup( [x['name'] for x in cat.all()], 3)
 	
 	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup=markup)
-	
 
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
-	print(type(message))
-
 	user_id = message.from_user.id
 
 	current_mode = db.search(q.user_id == user_id)[0]['current_mode']
