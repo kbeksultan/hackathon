@@ -32,6 +32,13 @@ def start(message):
 
 	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id))
 
+
+@bot.message_handler(commands = ['help'])
+def help_user(message):
+	bot.send_message(message.chat.id,Commands)
+
+
+
 @bot.message_handler(commands=['locate'])
 def locate(message):
 	user_id = message.from_user.id
