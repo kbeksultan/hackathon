@@ -2,6 +2,7 @@ import telebot
 import json
 
 from telebot import types
+from tinydb import TinyDB, Query
 
 from constants import *
 from datetime import datetime
@@ -9,20 +10,36 @@ import os
 from messages import *
 
 MODES = ['INIT', 'LOCATION', 'CATEGORY', 'RECORD']
-START = {"location": "null", "category": "null", "current_mode": "INIT"}
+START = {"user_id": "0", "location": "null", "category": "null", "current_mode": "INIT"}
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
+db = TinyDB('vars.json')
+q = Query()
 
 # COMMANDS ================================================================
 @bot.message_handler(commands=['start'])
 def start(message):
-	_set_json(VARS, START)
+	user_id = message.from_user.id
+	
+	data = START
+	data['user_id'] = user_id
 
-	bot.send_message(message.chat.id, "Hello")
+	if db.search(q.user_id == user_id) != []:
+		db.update(data, q.user_id == user_id)
+
+	else:
+		db.insert(data)
+
+	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id))
 
 @bot.message_handler(commands=['locate'])
 def locate(message):
-	_update(VARS, 'current_mode', MODES[1])
+	user_id = message.from_user.id
+
+	mode = MODES[1]
+	data = {'current_mode': mode}
+
+	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(LOCATIONS), 3)
 
@@ -30,7 +47,12 @@ def locate(message):
 
 @bot.message_handler(commands=['category'])
 def category(message):
-	_update(VARS, 'current_mode', MODES[2])
+	user_id = message.from_user.id
+
+	mode = MODES[2]
+	data = {'current_mode': mode}
+
+	db.update(data, q.user_id == user_id)
 
 	markup = _get_RKMarkup(_get_items(CATEGORIES), 3)
 
@@ -38,35 +60,50 @@ def category(message):
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
-	current_mode = _get_json(VARS)['current_mode']
+	user_id = message.from_user.id
+
+	current_mode = db.search(q.user_id == user_id)[0]['current_mode']
 	location = None
 	category = None
+
+	print(current_mode)
 
 	if current_mode == MODES[0]:
 		bot.send_message(message.chat.id, message.text.upper())
 
 	elif current_mode == MODES[1]:
-		_update(VARS, 'location', message.text)
+		# _update(VARS, 'location', message.text)
+
+		data = {'location': message.text}
+
+		db.update(data, q.user_id == user_id)
 
 	elif current_mode == MODES[2]:
-		_update(VARS, 'category', message.text)	
+		data = {'category': message.text}
+
+		db.update(data, q.user_id == user_id)
 
 	elif current_mode == MODES[3]:
-		location = _get_json(VARS)['location']
-		category = _get_json(VARS)['category']
-
-		bot.send_message(message.chat.id, location + ':' + category)
 		save(message)		# here save message
 
 	if category != 'null' and location != 'null':
-		_update(VARS, 'current_mode', MODES[3])
+		mode = MODES[3]
+
+		data = {'current_mode': mode}
+		db.update(data, q.user_id == user_id)
 
 	else:
-		_update(VARS, 'current_mode', MODES[0])
+		mode = MODES[0]
 
-
+		data = {'current_mode': mode}
+		db.update(data, q.user_id == user_id)
 
 def save(message):
+	user_id = message.from_user.id
+
+	location = db.search(q.user_id == user_id)[0]['location']
+	category = db.search(q.user_id == user_id)[0]['category']
+	
 	text  = message.text
 	name  = message.from_user.first_name
 	date = datetime.now()
@@ -77,8 +114,6 @@ def save(message):
 	f = open(road , "a")
 	date = date.strftime('%d/%m/%Y %H:%M:%S')
 	f.write(name + " " + date + " " + text)
-
-
 
 # MAIN =====================================================================
 def main():									# method for bot polling
