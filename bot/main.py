@@ -13,7 +13,7 @@ MODES = ['INIT', 'LOCATION', 'CATEGORY', 'RECORD']
 START = {"user_id": "0", "location": "null", "category": "null", "current_mode": "INIT"}
 
 bot = telebot.TeleBot(TOKEN)				# Bot creating through TOKEN
-db = TinyDB(VARS)
+db = TinyDB('vars.json')
 q = Query()
 
 # COMMANDS ================================================================
@@ -30,14 +30,12 @@ def start(message):
 	else:
 		db.insert(data)
 
-	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id))
+	bot.send_message(message.chat.id, 'Your user id is ' + str(user_id), reply_markup=types.ReplyKeyboardRemove())
 
 
 @bot.message_handler(commands = ['help'])
 def help_user(message):
-	bot.send_message(message.chat.id,Commands)
-
-
+	bot.send_message(message.chat.id, Commands, reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands=['locate'])
 def locate(message):
@@ -73,22 +71,26 @@ def echo(message):
 	# print(current_mode)
 
 	if current_mode == MODES[0]:
-		bot.send_message(message.chat.id, 'Choose location and category please')
+		bot.send_message(message.chat.id, 'Choose location and category please', reply_markup=types.ReplyKeyboardRemove())
 
 	elif current_mode == MODES[1]:
 		data = { 'location': message.text }
 
 		db.update(data, q.user_id == user_id)
 
+		bot.send_message(message.chat.id, 'Location saved', reply_markup=types.ReplyKeyboardRemove())
+
 	elif current_mode == MODES[2]:
 		data = { 'category': message.text }
 
 		db.update(data, q.user_id == user_id)
 
+		bot.send_message(message.chat.id, 'Category saved', reply_markup=types.ReplyKeyboardRemove())
+
 	elif current_mode == MODES[3]:
 		save(message)		# here save message
 
-		bot.send_message(message.chat.id, 'Saved')
+		bot.send_message(message.chat.id, 'Saved', reply_markup=types.ReplyKeyboardRemove())
 
 	if category != 'null' and location != 'null':
 		mode = MODES[3]
@@ -168,35 +170,6 @@ def _get_items(file):
 				arr.append(line)
 
 			return arr
-	except:
-		print(file + ' not found!')
-
-def _update(file, field, value):
-	data = _get_json(file)
-
-	try:
-		data[field] = value
-
-	except:
-		print('field not found!')
-
-	_set_json(file, data)
-
-def _set_json(file, data):
-	try:
-		with open(file, "w") as f:
-			json.dump(data, f)
-
-	except:
-		print(file + ' not found!')
-
-def _get_json(file):
-	try:
-		with open(file, "r") as f:
-			data = json.load(f)
-
-			return data
-
 	except:
 		print(file + ' not found!')
 
