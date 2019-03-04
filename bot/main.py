@@ -47,7 +47,7 @@ def go(message):
 def _locate(message):
 	user_id = message.from_user.id
 	mode = MODES[1]
-
+	msg = message.text
 	data = {'current_mode': mode}
 	db.update(data, q.user_id == user_id)
 
@@ -56,7 +56,10 @@ def _locate(message):
 
 	bot.send_message(message.chat.id, LOCATION_CHOOSE, reply_markup=markup)
 
-def _service(message):
+	# bot.register_next_step_handler(msg,category(msg))	
+
+@bot.message_handler(commands=['service'])
+def service(message):
 	user_id = message.from_user.id
 	mode = MODES[3]
 
@@ -84,6 +87,7 @@ def _category(message):
 	
 	bot.send_message(message.chat.id, CATEGORY_CHOOSE, reply_markup=markup)
 	
+
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
@@ -177,7 +181,9 @@ def save(message):
 # MAIN =====================================================================
 def main():									# method for bot polling
 	print('Started!')
+	# bot.enable_save_next_step_handlers(delay=2)
 
+	# bot.load_next_step_handlers()
 	bot.polling()
 
 # AUXILLARY ================================================================
